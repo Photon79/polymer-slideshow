@@ -32,4 +32,4 @@ The polymer-slide element can contain any content you desire. The example uses t
 
 The easiest way to get the code is from bower.
 
-    bower install polymer-slideshow
+    bower install git://github.com/Photon79/polymer-slideshow.git
