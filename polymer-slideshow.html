@@ -18,146 +18,255 @@ should appear.
 <link rel="import" href="../polymer/polymer.html">
 
 <dom-module id="polymer-slideshow">
-<style>
-:host {
-  box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  display: block;
-  width: 350px;
-  height: 250px;
-}
-
-#container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-.controls {
-  cursor: pointer;
-  width: 40px;
-  height: 100%;
-  position: absolute;
-  color: white;
-  background-color: rgba(0, 0, 0, 0.5);
-  opacity: 0;
-  z-index: 100;
-  text-align: center;
-  font-size: 1.5em;
-  line-height: 250px;
-}
-
-.controls:hover {
-  opacity: 1;
-}
-
-.next {
-  right: 0;
-  top: 0;
-}
-
-.previous {
-  left: 0;
-  top: 0;
-}
-
-polyfill-next-selector {
-  content: '#container polymer-slide';
-}
-
-#container ::content polymer-slide {
-  position: absolute;
-  top: 0;
-  opacity: 0;
-  width: 100%;
-  height: 100%;
-}
-</style>
-<template>
-  <div id="container">
-    <div on-tap="onPreviousClicked" class="controls previous"><</div>
-    <content select="polymer-slide"></content>
-    <div on-tap="onNextClicked" class="controls next">></div>
-  </div>
-</template>
-<script>
-Polymer({
-  is: "polymer-slideshow",
-  currentSlide: 0,
-  properties: {
-    width: {
-      type: Number,
-      value: 350,
-      reflectToAttribute: true
-    },
-    height: {
-      type: Number,
-      value: 250,
-      reflectToAttribute: true
-    },
-    auto: {
-      type: Boolean,
-      value: true,
-      reflectToAttribute: true
-    },
-    delay: {
-      type: Number,
-      value: 5000,
-      reflectToAttribute: true
-    },
-    sliders: {
-      type: Boolean,
-      value: false,
-      reflectToAttribute: true
+  <style>
+    :host {
+      box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      -webkit-box-sizing: border-box;
+      display: block;
+      height: 250px;
+      width: 350px;
     }
-  },
-  attached: function () {
-    this.async(function() {
-      this.style.height = this.height + "px";
-      this.style.width = this.width + "px";
-      var controls = this.getElementsByClassName("controls")
-      if (this.sliders) {
-        for (var i = 0; i < controls.length; i++) {
-          controls[i].style.lineHeight=this.height+"px";
+
+    #container {
+      height: 100%;
+      width: 100%;
+    }
+
+    .controls {
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 50%;
+      color: white;
+      cursor: pointer;
+      font-size: 1.5em;
+      height: 40px;
+      line-height: 40px;
+      margin-top: -20px;
+      opacity: 0.5;
+      position: absolute;
+      text-align: center;
+      top: 50%;
+      width: 40px;
+      z-index: 100;
+    }
+
+    .controls:hover {
+      opacity: 1;
+    }
+
+    .next {
+      right: 0;
+    }
+
+    .previous {
+      left: 0;
+    }
+
+    polyfill-next-selector {
+      content: '#container polymer-slide';
+    }
+
+    #container ::content polymer-slide {
+      visibility: hidden;
+      height: 100%;
+      opacity: 0;
+      position: absolute;
+      top: 0;
+      transition: all 2s;
+      width: 100%;
+    }
+
+    #container ::content polymer-slide.active {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    #dots {
+      background: rgba(0, 0, 0, 0.8);
+      bottom: 15px;
+      height: 25px;
+      line-height: 25px;
+      position: relative;
+      text-align: center;
+      width: 100%;
+    }
+
+    #dots span {
+      background: #eee;
+      border-radius: 50%;
+      cursor: pointer;
+      display: inline-block;
+      height: 10px;
+      margin: 0 5px;
+      transition: background 2s;
+      width: 10px;
+    }
+
+    #dots span.active {
+      background: #ff0000;
+    }
+  </style>
+
+  <template>
+    <div id="container">
+      <div on-tap="onPreviousClicked" class="controls previous"><</div>
+      <content select="polymer-slide"></content>
+      <div on-tap="onNextClicked" class="controls next">></div>
+    </div>
+    <div id="dots"></div>
+  </template>
+
+  <script>
+    Polymer({
+      is: "polymer-slideshow",
+
+      currentSlide: 0,
+
+      properties: {
+        auto: {
+          type: Boolean,
+          value: true,
+          reflectToAttribute: true
+        },
+
+        delay: {
+          type: Number,
+          value: 5000,
+          reflectToAttribute: true
+        },
+
+        height: {
+          type: String,
+          value: '250px',
+          reflectToAttribute: true
+        },
+
+        sliders: {
+          type: Boolean,
+          value: true,
+          reflectToAttribute: true
+        },
+
+        width: {
+          type: String,
+          value: '350px',
+          reflectToAttribute: true
         }
-      } else {
-        while (controls.length > 0) {
-          controls[0].parentNode.removeChild(controls[0]);
-        }
-      }
-      this.slides = Polymer.dom(this).querySelectorAll("polymer-slide");
-      if (this.slides.length >= 0) {
-        this.slides[0].style.opacity = 1;
-      }
-      if (this.auto === true) {
-        setInterval((function(self) {
-          return function() {
-            self.onNextClicked();
+      },
+
+      attached: function () {
+        this.async(function() {
+          if (typeof this.delay === "undefined")
+            this.delay = 5000;
+
+          this.style.height = 'calc(' + this.height + ')';
+          this.style.width = 'calc(' + this.width + ')';
+          var controls = this.getElementsByClassName("controls")
+
+          if (!this.sliders) {
+            while (controls.length > 0) {
+              controls[0].parentNode.removeChild(controls[0]);
+            }
           }
-        })(this), this.delay);
+
+          this.slides = Polymer.dom(this).querySelectorAll("polymer-slide");
+
+          if (this.slides.length > 0) {
+            this.dots = [];
+            for(var i = 0, l = this.slides.length; i < l; i++) {
+              var dot = document.createElement('span');
+              dot.classList.add('polymer-slideshow');
+              dot.setAttribute('data-index', i);
+
+              if(i === 0) {
+                dot.classList.add('active');
+                this.slides[0].classList.add('active');
+              }
+
+              var self = this;
+
+              dot.addEventListener('click', function() {
+                self.dots.forEach(function(dot) { dot.classList.remove('active'); });
+                this.classList.add('active');
+                self.slideSelect(this.getAttribute('data-index'));
+              });
+
+              this.$.dots.appendChild(dot);
+              this.dots.push(dot);
+            }
+          }
+
+          if (this.auto === true) {
+            this.interval = setInterval((function(self) {
+              return function() {
+                self.onNextClicked();
+              }
+            })(this), this.delay);
+          }
+        });
+      },
+
+      getNextImage: function () {
+        this.currentSlide = (this.currentSlide + 1) % this.slides.length;
+        return this.slides[this.currentSlide];
+      },
+
+      getPreviousImage: function () {
+        if (this.currentSlide - 1 < 0) {
+          this.currentSlide = this.slides.length;
+        }
+
+        this.currentSlide = (this.currentSlide - 1) % this.slides.length;
+        return this.slides[this.currentSlide];
+      },
+
+      listeners: {
+        'mouseover': 'mouseOver',
+        'mouseout': 'mouseOut',
+        'touchstart': 'mouseOver',
+        'touchend': 'mouseOut'
+      },
+
+      mouseOver: function(e) {
+        if(this.interval)
+          clearInterval(this.interval);
+      },
+
+      mouseOut: function(e) {
+        if (this.auto === true) {
+          this.interval = setInterval((function(self) {
+            return function() {
+              self.onNextClicked();
+            }
+          })(this), this.delay);
+        }
+      },
+
+      onNextClicked: function (e) {
+        if (this.slides[this.currentSlide]) {
+          this.slides[this.currentSlide].classList.remove('active');
+          this.dots[this.currentSlide].classList.remove('active');
+          this.getNextImage().classList.add('active');
+          this.dots[this.currentSlide].classList.add('active');
+        }
+      },
+
+      onPreviousClicked: function (e) {
+        if (this.slides[this.currentSlide]) {
+          this.slides[this.currentSlide].classList.remove('active');
+          this.dots[this.currentSlide].classList.remove('active');
+          this.getPreviousImage().classList.add('active');
+          this.dots[this.currentSlide].classList.add('active');
+        }
+      },
+
+      slideSelect: function(num) {
+        if(this.slides[this.currentSlide]) {
+          this.slides[this.currentSlide].classList.remove('active');
+          this.currentSlide = num;
+          this.slides[num].classList.add('active');
+        }
       }
     });
-  },
-  onNextClicked: function (e) {
-    this.slides[this.currentSlide].style.opacity = 0;
-    this.getNextImage().style.opacity = 1;
-  },
-  getNextImage: function () {
-    this.currentSlide = (this.currentSlide + 1) % this.slides.length;
-    return this.slides[this.currentSlide];
-  },
-  onPreviousClicked: function (e) {
-    this.slides[this.currentSlide].style.opacity = 0;
-    this.getPreviousImage().style.opacity = 1;
-  },
-  getPreviousImage: function () {
-    if (this.currentSlide - 1 < 0) {
-      this.currentSlide = this.slides.length;
-    }
-    this.currentSlide = (this.currentSlide - 1) % this.slides.length;
-    return this.slides[this.currentSlide];
-  }
-});
-</script>
+  </script>
 </dom-module>

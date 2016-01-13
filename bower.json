@@ -1,11 +1,11 @@
 {
   "name": "polymer-slideshow",
-  "version": "3.1.0",
-  "homepage": "https://github.com/Iverum/polymer-slideshow",
+  "version": "1.0.0",
+  "homepage": "https://github.com/Photon79/polymer-slideshow",
   "authors": [
-    "Blake Hair <blake.hair@gmail.com>"
+    "Mezentsev Sergey <photon79@gmail.com>"
   ],
-  "description": "A Polymer element for slideshows",
+  "description": "A fixed version of Polymer element for slideshows (forked from https://github.com/Iverum/polymer-slideshow)",
   "keywords": [
     "polymer",
     "web-components"
