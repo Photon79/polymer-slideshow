@@ -27,9 +27,3 @@ The polymer-slide element can contain any content you desire. The example uses t
     <polymer-slide>
         <img src="http://placekitten.com/g/500/500">
     </polymer-slide>
-
-## Get the code
-
-The easiest way to get the code is from bower.
-
-    bower install polymer-slideshow
